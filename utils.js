@@ -7,3 +7,7 @@ const debounce = (func, delay = 1000) => {
     }, delay);
   };
 };
+
+const closeMenu = element => {
+  element.classList.remove("is-active");
+};

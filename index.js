@@ -30,7 +30,7 @@ const resultsWrapper = document.querySelector(".results");
 const onInput = async event => {
   const movies = await fetchData(event.target.value);
   if (!movies.length) {
-    dropdown.classList.remove("is-active");
+    closeMenu(dropdown);
     return;
   }
 
@@ -48,6 +48,11 @@ const onInput = async event => {
 			${movie.Title}
 		`;
 
+    option.addEventListener("click", () => {
+      input.value = movie.Title;
+      closeMenu(dropdown);
+    });
+
     resultsWrapper.appendChild(option);
   }
 };
@@ -57,6 +62,6 @@ input.addEventListener("input", debounce(onInput, 500));
 document.addEventListener("click", event => {
   if (!root.contains(event.target)) {
     input.value = "";
-    dropdown.classList.remove("is-active");
+    closeMenu(dropdown);
   }
 });

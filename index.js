@@ -11,6 +11,19 @@ const fetchData = async searchTerm => {
   return response.data.Search;
 };
 
+const fetchMovie = async movie => {
+  const response = await axios.get("http://www.omdbapi.com/", {
+    params: {
+      apikey: "3eef3544",
+      i: movie.imdbID
+    }
+  });
+
+  if (response.data.Error) return [];
+
+  return response.data;
+};
+
 const root = document.querySelector(".autocomplete");
 
 root.innerHTML = `
@@ -51,6 +64,7 @@ const onInput = async event => {
     option.addEventListener("click", () => {
       input.value = movie.Title;
       closeMenu(dropdown);
+      onMovieSelect(movie);
     });
 
     resultsWrapper.appendChild(option);
@@ -65,3 +79,47 @@ document.addEventListener("click", event => {
     closeMenu(dropdown);
   }
 });
+
+const onMovieSelect = async movie => {
+  const movieSelection = await fetchMovie(movie);
+  document.querySelector("#summary").innerHTML = movieTemplate(movieSelection);
+};
+
+const movieTemplate = movieDetail => {
+  return `
+		<article class="media">
+			<figure class="media-left">
+				<p class="image">
+					<img src="${movieDetail.Poster}"/>
+				</p>
+			</figure>
+			<div class="media-content">
+				<div class="content">
+					<h1>${movieDetail.Title}</h1>
+					<h4>${movieDetail.Genre}</h4>
+					<p>${movieDetail.Plot}</p>
+				</div>
+			</div>
+		</article>
+		<article class="notification is-primary">
+			<p class="title">${movieDetail.Awards}</p>
+			<p class="subtitle">Awards</p>
+		</article>
+		<article class="notification is-primary">
+			<p class="title">${movieDetail.BoxOffice}</p>
+			<p class="subtitle">Box Office</p>
+		</article>
+		<article class="notification is-primary">
+			<p class="title">${movieDetail.Metascore}</p>
+			<p class="subtitle">Metascore</p>
+		</article>
+		<article class="notification is-primary">
+			<p class="title">${movieDetail.imdbRating}</p>
+			<p class="subtitle">IMDB Rating</p>
+		</article>
+		<article class="notification is-primary">
+			<p class="title">${movieDetail.imdbVotes}</p>
+			<p class="subtitle">IMDB Votes</p>
+		</article>
+	`;
+};

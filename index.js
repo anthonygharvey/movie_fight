@@ -1,16 +1,3 @@
-const fetchData = async searchTerm => {
-  const response = await axios.get("http://www.omdbapi.com/", {
-    params: {
-      apikey: "3eef3544",
-      s: searchTerm
-    }
-  });
-
-  if (response.data.Error) return [];
-
-  return response.data.Search;
-};
-
 const fetchMovie = async movie => {
   const response = await axios.get("http://www.omdbapi.com/", {
     params: {
@@ -24,59 +11,32 @@ const fetchMovie = async movie => {
   return response.data;
 };
 
-const root = document.querySelector(".autocomplete");
-
-root.innerHTML = `
-	<label><b>Search For a Movie</b></label>
-	<input class="input"/>
-	<div class="dropdown">
-		<div class="dropdown-menu">
-			<div class="dropdown-content results"></div>
-		</div>
-	</div>
-`;
-
-const input = document.querySelector("input");
-const dropdown = document.querySelector(".dropdown");
-const resultsWrapper = document.querySelector(".results");
-
-const onInput = async event => {
-  const movies = await fetchData(event.target.value);
-  if (!movies.length) {
-    closeMenu(dropdown);
-    return;
-  }
-
-  resultsWrapper.innerHTML = "";
-
-  dropdown.classList.add("is-active");
-
-  for (let movie of movies) {
-    const option = document.createElement("a");
+createAutoComplete({
+  root: document.querySelector(".autocomplete"),
+  renderOption(movie) {
     const imgSrc = movie.Poster === "N/A" ? "" : movie.Poster;
-
-    option.classList.add("dropdown-item");
-    option.innerHTML = `
+    return `
 			<img src="${imgSrc}" />
-			${movie.Title}
+			${movie.Title} (${movie.Year})
 		`;
-
-    option.addEventListener("click", () => {
-      input.value = movie.Title;
-      closeMenu(dropdown);
-      onMovieSelect(movie);
+  },
+  onOptionSelect(movie) {
+    onMovieSelect(movie);
+  },
+  inputValue(movie) {
+    return movie.Title;
+  },
+  async fetchData(searchTerm) {
+    const response = await axios.get("http://www.omdbapi.com/", {
+      params: {
+        apikey: "3eef3544",
+        s: searchTerm
+      }
     });
 
-    resultsWrapper.appendChild(option);
-  }
-};
+    if (response.data.Error) return [];
 
-input.addEventListener("input", debounce(onInput, 500));
-
-document.addEventListener("click", event => {
-  if (!root.contains(event.target)) {
-    input.value = "";
-    closeMenu(dropdown);
+    return response.data.Search;
   }
 });
 

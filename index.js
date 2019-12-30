@@ -1,27 +1,10 @@
-const fetchMovie = async movie => {
-  const response = await axios.get("http://www.omdbapi.com/", {
-    params: {
-      apikey: "3eef3544",
-      i: movie.imdbID
-    }
-  });
-
-  if (response.data.Error) return [];
-
-  return response.data;
-};
-
-createAutoComplete({
-  root: document.querySelector(".autocomplete"),
+const autoCompleteConfig = {
   renderOption(movie) {
     const imgSrc = movie.Poster === "N/A" ? "" : movie.Poster;
     return `
 			<img src="${imgSrc}" />
 			${movie.Title} (${movie.Year})
 		`;
-  },
-  onOptionSelect(movie) {
-    onMovieSelect(movie);
   },
   inputValue(movie) {
     return movie.Title;
@@ -38,11 +21,42 @@ createAutoComplete({
 
     return response.data.Search;
   }
+};
+
+const fetchMovie = async movie => {
+  const response = await axios.get("http://www.omdbapi.com/", {
+    params: {
+      apikey: "3eef3544",
+      i: movie.imdbID
+    }
+  });
+
+  if (response.data.Error) return [];
+
+  return response.data;
+};
+
+createAutoComplete({
+  ...autoCompleteConfig,
+  root: document.querySelector("#left-autocomplete"),
+  onOptionSelect(movie) {
+    document.querySelector(".tutorial").classList.add("is-hidden");
+    onMovieSelect(movie, document.querySelector("#left-summary"));
+  }
 });
 
-const onMovieSelect = async movie => {
+createAutoComplete({
+  ...autoCompleteConfig,
+  root: document.querySelector("#right-autocomplete"),
+  onOptionSelect(movie) {
+    document.querySelector(".tutorial").classList.add("is-hidden");
+    onMovieSelect(movie, document.querySelector("#right-summary"));
+  }
+});
+
+const onMovieSelect = async (movie, summaryElement) => {
   const movieSelection = await fetchMovie(movie);
-  document.querySelector("#summary").innerHTML = movieTemplate(movieSelection);
+  summaryElement.innerHTML = movieTemplate(movieSelection);
 };
 
 const movieTemplate = movieDetail => {
